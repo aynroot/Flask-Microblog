@@ -1,9 +1,16 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <h1>Sign In</h1>
+  <h1>Sign Up</h1>
   <form action="" method="post" name="login">
       {{ form.hidden_tag() }}
+      <p>
+          Nickname:<br>
+          {{ form.nickname(size=80) }}<br>
+          {% for error in form.nickname.errors %}
+              <span style="color: red;">[{{ error }}]</span>
+          {% endfor %}<br>
+      </p>
       <p>
           Email:<br>
           {{ form.email(size=80) }}<br>
@@ -18,7 +25,13 @@
               <span style="color: red;">[{{ error }}]</span>
           {% endfor %}<br>
       </p>
-      <p>{{ form.remember_me }} Remember Me</p>
+      <p>
+          Verify password:<br>
+          {{ form.verify_password(size=80) }}<br>
+          {% for error in form.verify_password.errors %}
+              <span style="color: red;">[{{ error }}]</span>
+          {% endfor %}<br>
+      </p>
       <p><input type="submit" value="Sign Up"></p>
   </form>
 {% endblock %}
