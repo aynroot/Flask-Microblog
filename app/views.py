@@ -15,6 +15,7 @@ def before_request():
 
 @app.route('/')
 @app.route('/index')
+@login_required
 def index():
     posts = [  # fake array of posts
         {
