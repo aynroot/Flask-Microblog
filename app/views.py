@@ -58,6 +58,10 @@ def signup():
         user.password = sha256_crypt.encrypt(form.password.data)
         db.session.add(user)
         db.session.commit()
+
+        # make the user follow himself
+        db.session.add(user.follow(user))
+        db.session.commit()
         flask.flash('Successfully signed up. Try to login.')
         return flask.redirect(flask.url_for('index'))
     return render_template('signup.html',
@@ -122,3 +126,43 @@ def user(nickname):
     return render_template('user.html',
                            user=user,
                            posts=posts)
+
+
+@app.route('/follow/<nickname>')
+@login_required
+def follow(nickname):
+    user = User.query.filter_by(nickname=nickname).first()
+    if user is None:
+        flask.flash('User %s not found.' % nickname)
+        return flask.redirect(flask.url_for('index'))
+    if user == flask.g.user:
+        flask.flash('You can\'t follow yourself!')
+        return flask.redirect(flask.url_for('user', nickname=nickname))
+    u = flask.g.user.follow(user)
+    if u is None:
+        flask.flash('Cannot follow ' + nickname + '.')
+        return flask.redirect(flask.url_for('user', nickname=nickname))
+    db.session.add(u)
+    db.session.commit()
+    flask.flash('You are now following ' + nickname + '!')
+    return flask.redirect(flask.url_for('user', nickname=nickname))
+
+
+@app.route('/unfollow/<nickname>')
+@login_required
+def unfollow(nickname):
+    user = User.query.filter_by(nickname=nickname).first()
+    if user is None:
+        flask.flash('User %s not found.' % nickname)
+        return flask.redirect(flask.url_for('index'))
+    if user == flask.g.user:
+        flask.flash('You can\'t unfollow yourself!')
+        return flask.redirect(flask.url_for('user', nickname=nickname))
+    u = flask.g.user.unfollow(user)
+    if u is None:
+        flask.flash('Cannot unfollow ' + nickname + '.')
+        return flask.redirect(flask.url_for('user', nickname=nickname))
+    db.session.add(u)
+    db.session.commit()
+    flask.flash('You have stopped following ' + nickname + '.')
+    return flask.redirect(flask.url_for('user', nickname=nickname))
