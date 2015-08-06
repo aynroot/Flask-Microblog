@@ -14,3 +14,7 @@ class SignUpForm(Form):
     nickname = StringField('nickname', validators=[DataRequired()])
     password = PasswordField('password', validators=[DataRequired()])
     verify_password = PasswordField('verify_password', validators=[EqualTo('password')])
+
+
+class PostForm(Form):
+    post = StringField('post', validators=[DataRequired()])

@@ -1,11 +1,13 @@
+from datetime import datetime
+
 import flask
 from flask import render_template
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from passlib.hash import sha256_crypt
 
 from app import app, db, login_manager
-from .models import User
-from .forms import LoginForm, SignUpForm
+from .models import User, Post
+from .forms import LoginForm, SignUpForm, PostForm
 
 
 @app.before_request
@@ -24,23 +26,27 @@ def internal_error(error):
     return render_template('500.html'), 500
 
 
-@app.route('/')
-@app.route('/index')
+@app.route('/', methods=['GET', 'POST'])
+@app.route('/index', methods=['GET', 'POST'])
 @login_required
 def index():
-    posts = [  # fake array of posts
-        {
-            'author': {'nickname': 'John'},
-            'body': 'Beautiful day in Portland!'
-        },
-        {
-            'author': {'nickname': 'Susan'},
-            'body': 'The Avengers movie was so cool!'
-        }
-    ]
+    form = PostForm()
+    if form.validate_on_submit():
+        post = Post(body=form.post.data, timestamp=datetime.utcnow(), author=flask.g.user)
+        db.session.add(post)
+        db.session.commit()
+        flask.flash('Your post is now live!')
+
+        # this trick avoids inserting duplicate posts when a user
+        # refreshes the page after submitting a blog post.
+        # because before redirect we have POST and after - GET
+        return flask.redirect(flask.url_for('index'))
+
+    posts = flask.g.user.followed_posts().all()
     return render_template('index.html',
                            title='Home',
                            user=current_user,
+                           form=form,
                            posts=posts)
 
 
