@@ -95,3 +95,19 @@ def logout():
     logout_user()
     flask.flash('Successfully logged out')
     return flask.redirect(flask.url_for('index'))
+
+
+@app.route('/user/<nickname>')
+@login_required
+def user(nickname):
+    user = User.query.filter_by(nickname=nickname).first()
+    if user is None:
+        flask.flash('User %s not found.' % nickname)
+        return flask.redirect(flask.url_for('index'))
+    posts = [
+        {'author': user, 'body': 'Test post #1'},
+        {'author': user, 'body': 'Test post #2'}
+    ]
+    return render_template('user.html',
+                           user=user,
+                           posts=posts)
