@@ -13,3 +13,6 @@ SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'app.db')
 DEBUG_TB_PROFILER_ENABLED = False
 DEBUG_TB_TEMPLATE_EDITOR_ENABLED = False
 DEBUG_TB_INTERCEPT_REDIRECTS = False
+
+# app settings
+POSTS_PER_PAGE = 3
