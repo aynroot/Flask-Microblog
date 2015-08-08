@@ -1,3 +1,7 @@
 <p>
-    {{ post.author.nickname }} says: <b>{{ post.body }}</b>
+    <a href="{{ url_for('user', nickname=post.author.nickname)}}">{{ post.author.nickname }}</a>
+    said {{ momentjs(post.timestamp).from_now() }}:
+</p>
+<p>
+    <strong>{{ post.body }}</strong>
 </p>
