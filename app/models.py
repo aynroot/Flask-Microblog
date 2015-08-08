@@ -1,4 +1,6 @@
-from app import db
+import flask.ext.whooshalchemy as whooshalchemy
+
+from app import app, db
 
 
 followers = db.Table('followers',
@@ -60,6 +62,7 @@ class User(db.Model):
 
 class Post(db.Model):
     __tablename__ = 'posts'
+    __searchable__ = ['body']
 
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.String(140))
@@ -68,3 +71,5 @@ class Post(db.Model):
 
     def __repr__(self):
         return '<Post: %r>' % self.body
+
+whooshalchemy.whoosh_index(app, Post)

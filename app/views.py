@@ -8,12 +8,14 @@ from passlib.hash import sha256_crypt
 import config
 from app import app, db, login_manager
 from .models import User, Post
-from .forms import LoginForm, SignUpForm, PostForm
+from .forms import LoginForm, SignUpForm, PostForm, SearchForm
 
 
 @app.before_request
 def before_request():
     flask.g.user = current_user
+    if flask.g.user.is_authenticated():
+        flask.g.search_form = SearchForm()
 
 
 @app.errorhandler(404)
@@ -173,3 +175,20 @@ def unfollow(nickname):
     db.session.commit()
     flask.flash('You have stopped following ' + nickname + '.')
     return flask.redirect(flask.url_for('user', nickname=nickname))
+
+
+@app.route('/search', methods=['POST'])
+@login_required
+def search():
+    if not flask.g.search_form.validate_on_submit():
+        return flask.redirect(flask.url_for('index'))
+    return flask.redirect(flask.url_for('search_results', query=flask.g.search_form.search.data))
+
+
+@app.route('/search_results/<query>')
+@login_required
+def search_results(query):
+    results = Post.query.whoosh_search(query, config.MAX_SEARCH_RESULTS).all()
+    return render_template('search_results.html',
+                           query=query,
+                           results=results)
