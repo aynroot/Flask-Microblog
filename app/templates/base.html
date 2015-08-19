@@ -9,6 +9,24 @@
     {% endif %}
 
     <script src="/static/js/moment.min.js"></script>
+    <script src="/static/js/jquery-1.11.3.min.js"></script>
+    <script>
+        function count_symbols(sourceId, resultId, loadingId) {
+            $(resultId).hide();
+            $(loadingId).show();
+            $.post('/count_symbols', {
+                text: $(sourceId).text()
+            }).done(function(result) {
+                $(resultId).text(result['count']);
+                $(loadingId).hide();
+                $(resultId).show();
+            }).fail(function() {
+                $(resultId).text("{{ _('Error: Could not contact server.') }}");
+                $(loadingId).hide();
+                $(resultId).show();
+            });
+        }
+    </script>
 </head>
 <body>
     <div>

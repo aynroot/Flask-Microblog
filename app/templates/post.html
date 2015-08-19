@@ -3,5 +3,12 @@
     said {{ momentjs(post.timestamp).from_now() }}:
 </p>
 <p>
-    <strong>{{ post.body }}</strong>
+    <p id="post{{ post.id }}"><strong>{{ post.body }}</strong></p>
+    <span id="symbols{{ post.id }}">
+        <a href="javascript:count_symbols('#post{{ post.id }}', '#symbols{{ post.id }}', '#loading{{ post.id }}');">
+            {{ _('Test Ajax (count symbols)') }}
+        </a>
+    </span>
+    <img id="loading{{post.id}}" style="display: none" src="/static/img/loading.gif">
+
 </p>

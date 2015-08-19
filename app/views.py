@@ -1,7 +1,8 @@
+import time
 from datetime import datetime
 
 import flask
-from flask import render_template
+from flask import render_template, jsonify
 from flask.ext.babel import gettext
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from passlib.hash import sha256_crypt
@@ -59,6 +60,15 @@ def index(page=1):
                            user=current_user,
                            form=form,
                            posts=posts)
+
+
+@app.route('/count_symbols', methods=['POST'])
+@login_required
+def count_symbols():
+    time.sleep(2)
+    return jsonify({
+        'count': len(flask.request.form['text'])
+    })
 
 
 @app.route('/signup', methods=['GET', 'POST'])
