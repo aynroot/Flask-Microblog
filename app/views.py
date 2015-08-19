@@ -2,13 +2,19 @@ from datetime import datetime
 
 import flask
 from flask import render_template
+from flask.ext.babel import gettext
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from passlib.hash import sha256_crypt
 
 import config
-from app import app, db, login_manager
+from app import app, db, login_manager, babel
 from .models import User, Post
 from .forms import LoginForm, SignUpForm, PostForm, SearchForm
+
+
+@babel.localeselector
+def get_locale():
+    return flask.request.accept_languages.best_match(config.LANGUAGES.keys())
 
 
 @app.before_request
@@ -39,7 +45,7 @@ def index(page=1):
         post = Post(body=form.post.data, timestamp=datetime.utcnow(), author=flask.g.user)
         db.session.add(post)
         db.session.commit()
-        flask.flash('Your post is now live!')
+        flask.flash(gettext('Your post is now live!'))
 
         # this trick avoids inserting duplicate posts when a user
         # refreshes the page after submitting a blog post.
@@ -58,7 +64,7 @@ def index(page=1):
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if flask.g.user is not None and flask.g.user.is_authenticated():
-        flask.flash('Already authenticated.')
+        flask.flash(gettext('Already authenticated.'))
         return flask.redirect(flask.url_for('index'))
 
     form = SignUpForm()
@@ -73,7 +79,7 @@ def signup():
         # make the user follow himself
         db.session.add(user.follow(user))
         db.session.commit()
-        flask.flash('Successfully signed up. Try to login.')
+        flask.flash(gettext('Successfully signed up. Try to login.'))
         return flask.redirect(flask.url_for('index'))
     return render_template('signup.html',
                            title='Sign Up',
@@ -88,7 +94,7 @@ def load_user(user_id):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if flask.g.user is not None and flask.g.user.is_authenticated():
-        flask.flash('Already authenticated.')
+        flask.flash(gettext('Already authenticated.'))
         return flask.redirect(flask.url_for('index'))
 
     form = LoginForm()
@@ -97,16 +103,16 @@ def login():
         user = User.query.filter_by(email=form.email.data).first()
 
         if not user:
-            flask.flash('No such email in database')
+            flask.flash(gettext('No such email in database'))
             return render_template('login.html',
                                    title='Sign In',
                                    form=form)
         if sha256_crypt.verify(form.password.data, user.password):
             login_user(user, remember=form.remember_me.data)
-            flask.flash('Logged in successfully.')
+            flask.flash(gettext('Logged in successfully.'))
             return flask.redirect(flask.url_for('index'))
         else:
-            flask.flash('Wrong password')
+            flask.flash(gettext('Wrong password'))
             return render_template('login.html',
                                    title='Sign In',
                                    form=form)
@@ -119,7 +125,7 @@ def login():
 @login_required
 def logout():
     logout_user()
-    flask.flash('Successfully logged out')
+    flask.flash(gettext('Successfully logged out'))
     return flask.redirect(flask.url_for('index'))
 
 
@@ -129,7 +135,7 @@ def logout():
 def user(nickname, page=1):
     user = User.query.filter_by(nickname=nickname).first()
     if user is None:
-        flask.flash('User %s not found.' % nickname)
+        flask.flash(gettext('User %(name)s not found.', name=nickname))
         return flask.redirect(flask.url_for('index'))
     posts = user.posts.paginate(page, config.POSTS_PER_PAGE, False)
     return render_template('user.html',
@@ -142,18 +148,18 @@ def user(nickname, page=1):
 def follow(nickname):
     user = User.query.filter_by(nickname=nickname).first()
     if user is None:
-        flask.flash('User %s not found.' % nickname)
+        flask.flash(gettext('User %(name)s not found.', name=nickname))
         return flask.redirect(flask.url_for('index'))
     if user == flask.g.user:
-        flask.flash('You can\'t follow yourself!')
+        flask.flash(gettext('You can\'t follow yourself!'))
         return flask.redirect(flask.url_for('user', nickname=nickname))
     u = flask.g.user.follow(user)
     if u is None:
-        flask.flash('Cannot follow ' + nickname + '.')
+        flask.flash(gettext('Cannot follow %(name)s.', name=nickname))
         return flask.redirect(flask.url_for('user', nickname=nickname))
     db.session.add(u)
     db.session.commit()
-    flask.flash('You are now following ' + nickname + '!')
+    flask.flash(gettext('You are now following %(name)s!', name=nickname))
     return flask.redirect(flask.url_for('user', nickname=nickname))
 
 
@@ -162,18 +168,18 @@ def follow(nickname):
 def unfollow(nickname):
     user = User.query.filter_by(nickname=nickname).first()
     if user is None:
-        flask.flash('User %s not found.' % nickname)
+        flask.flash(gettext('User %(name)s not found.', name=nickname))
         return flask.redirect(flask.url_for('index'))
     if user == flask.g.user:
-        flask.flash('You can\'t unfollow yourself!')
+        flask.flash(gettext('You can\'t unfollow yourself!'))
         return flask.redirect(flask.url_for('user', nickname=nickname))
     u = flask.g.user.unfollow(user)
     if u is None:
-        flask.flash('Cannot unfollow ' + nickname + '.')
+        flask.flash(gettext('Cannot unfollow %(name)s.', name=nickname))
         return flask.redirect(flask.url_for('user', nickname=nickname))
     db.session.add(u)
     db.session.commit()
-    flask.flash('You have stopped following ' + nickname + '.')
+    flask.flash(gettext('You have stopped following %(name)s.', name=nickname))
     return flask.redirect(flask.url_for('user', nickname=nickname))
 
 

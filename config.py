@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-s
 import os.path
 
 
@@ -15,6 +16,12 @@ WHOOSH_BASE = os.path.join(basedir, 'search.db')
 DEBUG_TB_PROFILER_ENABLED = False
 DEBUG_TB_TEMPLATE_EDITOR_ENABLED = False
 DEBUG_TB_INTERCEPT_REDIRECTS = False
+
+# languages settings
+LANGUAGES = {
+    'en': 'English',
+    'ru': 'Русский'
+}
 
 # app settings
 POSTS_PER_PAGE = 3

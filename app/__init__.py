@@ -5,6 +5,7 @@ from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.login import LoginManager
 from flask_debugtoolbar import DebugToolbarExtension
+from flask.ext.babel import Babel
 
 from momentjs import MomentJS
 
@@ -31,5 +32,7 @@ if not app.debug:
     app.logger.info('microblog startup')
 
 app.jinja_env.globals['momentjs'] = MomentJS
+
+babel = Babel(app)
 
 from app import views, models
